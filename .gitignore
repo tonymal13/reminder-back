@@ -1,0 +1,210 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# IDE files
+## IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Intellij Patch ###
+# Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
+
+# *.iml
+# modules.xml
+# .idea/misc.xml
+# *.ipr
+
+# Sonarlint plugin
+.idea/sonarlint/
+
+## Eclipse
+.settings/
+.project
+.classpath
+bin/
+
+## NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# Build output
+target/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# KDE
+.directory
+
+# Application specific
+## Spring Boot
+spring-boot-app.log
+
+## Database
+*.db
+*.sqlite
+*.h2.db
+
+## Liquibase
+liquibase.properties
+
+## Keycloak (если используется)
+keycloak.json
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+logs/**
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage reports
+coverage/
+*.gcov
+*.lcov
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# Unit test reports
+TEST*.xml
+
+# Checkstyle reports
+checkstyle-output.xml
+
+# PMD reports
+pmd.xml
+
+# JaCoCo coverage reports
+jacoco.exec
+*.exec
+
+# Cobertura coverage reports
+cobertura.ser
+
+# Build tool specific
+## Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+## Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Application specific configuration files
+application.properties
+application-*.properties
+application.yml
+application-*.yml
+
+# Kubernetes
+kubernetes/
+
+# Docker
+docker-compose.override.yml
+
+# Azure
+.azure/
+
+# VS Code
+.vscode/
+
+# Application specific
+/heapdump
+/db
+
+# Microservices
+/config-server
+/service-registry
+
+# Documentation
+**/docs/_build/
+
+# Local History
+.history/
+
+# Application logs
+**/logs/
+
+# Profile specific files
+!application-prod.properties
+!application-dev.properties
+
+# Local configuration files that should not be committed
+**/src/main/resources/application-local.properties
+**/src/test/resources/application-test.properties
