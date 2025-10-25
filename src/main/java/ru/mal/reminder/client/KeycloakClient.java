@@ -15,6 +15,8 @@ import ru.mal.reminder.dto.TokenResponse;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.mal.reminder.Consts.*;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -24,34 +26,30 @@ public class KeycloakClient {
     private final KeycloakProperties properties;
 
     public TokenResponse adminLogin() {
-        String tokenUrl = properties.serverUrl() + "/realms/master/protocol/openid-connect/token";
+        String tokenUrl = properties.serverUrl() + ADMIN_TOKEN_PATH;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("grant_type", "password");
-        formData.add("client_id", properties.adminClientId());
-        formData.add("username", properties.adminUsername());
-        formData.add("password", properties.adminPassword());
+        formData.add(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD);
+        formData.add(CLIENT_ID_PARAM, properties.adminClientId());
+        formData.add(USERNAME_PARAM, properties.adminUsername());
+        formData.add(PASSWORD_PARAM, properties.adminPassword());
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
-        try {
-            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(tokenUrl, request, TokenResponse.class);
+        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(tokenUrl, request, TokenResponse.class);
 
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return response.getBody();
-            } else {
-                throw new RuntimeException("Admin login failed: " + response.getStatusCode());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Admin login error: " + e.getMessage());
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return response.getBody();
+        } else {
+            throw new RuntimeException();
         }
     }
 
     public String registerUser(String adminToken, KeycloakUserRepresentation user) {
-        String userRegistrationUrl = properties.serverUrl() + "/admin/realms/" + properties.realm() + "/users";
+        String userRegistrationUrl = properties.serverUrl() + ADMIN_REALMS_PATH + properties.realm() + USERS_PATH;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -65,12 +63,12 @@ public class KeycloakClient {
             String location = Objects.requireNonNull(response.getHeaders().getLocation()).toString();
             return location.substring(location.lastIndexOf('/') + 1);
         } else {
-            throw new RuntimeException("User registration failed: " + response.getStatusCode());
+            throw new RuntimeException();
         }
     }
 
     public void resetUserPassword(String userId, KeycloakCredentialsRepresentation credentials, String adminToken) {
-        String passwordResetUrl = properties.serverUrl() + "/admin/realms/" + properties.realm() + "/users/" + userId + "/reset-password";
+        String passwordResetUrl = properties.serverUrl() + ADMIN_REALMS_PATH + properties.realm() + USERS_PATH + userId + RESET_PASSWORD_PATH;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -82,27 +80,48 @@ public class KeycloakClient {
     }
 
     public void assignUserRole(String userId, String roleName, String adminToken) {
-        try {
-            String rolesUrl = properties.serverUrl() + "/admin/realms/" + properties.realm() + "/users/" + userId + "/role-mappings/realm";
-            String roleUrl = properties.serverUrl() + "/admin/realms/" + properties.realm() + "/roles/" + roleName;
+        String rolesUrl = properties.serverUrl() + ADMIN_REALMS_PATH + properties.realm() + USERS_PATH + userId + ROLE_MAPPINGS_PATH;
+        String roleUrl = properties.serverUrl() + ADMIN_REALMS_PATH + properties.realm() + ROLES_PATH + roleName;
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(adminToken);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(adminToken);
 
-            HttpEntity<Void> getRequest = new HttpEntity<>(headers);
-            ResponseEntity<Object> roleResponse = restTemplate.exchange(
-                    roleUrl, HttpMethod.GET, getRequest, Object.class);
+        HttpEntity<Void> getRequest = new HttpEntity<>(headers);
+        ResponseEntity<Object> roleResponse = restTemplate.exchange(
+                roleUrl, HttpMethod.GET, getRequest, Object.class);
 
-            if (roleResponse.getStatusCode() == HttpStatus.OK && roleResponse.getBody() != null) {
-                Object roleRepresentation = roleResponse.getBody();
-                List<Object> rolesList = List.of(roleRepresentation);
+        if (roleResponse.getStatusCode() == HttpStatus.OK && roleResponse.getBody() != null) {
+            Object roleRepresentation = roleResponse.getBody();
+            List<Object> rolesList = List.of(roleRepresentation);
 
-                HttpEntity<List<Object>> assignRequest = new HttpEntity<>(rolesList, headers);
-                restTemplate.postForEntity(rolesUrl, assignRequest, Void.class);
-            }
-        } catch (Exception e) {
-            log.error("Failed to assign role '{}' to user {}: {}", roleName, userId, e.getMessage());
+            HttpEntity<List<Object>> assignRequest = new HttpEntity<>(rolesList, headers);
+            restTemplate.postForEntity(rolesUrl, assignRequest, Void.class);
+        }
+    }
+
+    public TokenResponse userLogin(String username, String password) {
+        String tokenUrl = properties.serverUrl() + REALMS_PATH + properties.realm() + TOKEN_PATH;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add(GRANT_TYPE_PARAM, GRANT_TYPE_PASSWORD);
+        formData.add(CLIENT_ID_PARAM, properties.clientId());
+        formData.add(CLIENT_SECRET_PARAM, properties.clientSecret());
+        formData.add(USERNAME_PARAM, username);
+        formData.add(PASSWORD_PARAM, password);
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(formData, headers);
+
+        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
+                tokenUrl, tokenRequest, TokenResponse.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return response.getBody();
+        } else {
+            throw new RuntimeException();
         }
     }
 }

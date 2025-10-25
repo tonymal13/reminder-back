@@ -1,55 +1,38 @@
 package ru.mal.reminder.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-import ru.mal.reminder.config.KeycloakProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import ru.mal.reminder.dto.TokenResponse;
 import ru.mal.reminder.dto.UserLoginRequest;
+import ru.mal.reminder.dto.registration.UserRegistrationRequest;
+import ru.mal.reminder.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final RestTemplate restTemplate;
-    private final KeycloakProperties properties;
+    private final AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest request) {
+        try {
+            String result = authService.registerUser(request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequest request) {
         try {
-            String tokenUrl = properties.serverUrl() + "/realms/" + properties.realm() + "/protocol/openid-connect/token";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("grant_type", "password");
-            formData.add("client_id", properties.clientId());
-            formData.add("client_secret", properties.clientSecret());
-            formData.add("username", request.getUsername());
-            formData.add("password", request.getPassword());
-
-            HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(formData, headers);
-
-            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                    tokenUrl, tokenRequest, TokenResponse.class);
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return ResponseEntity.ok(response.getBody());
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Login failed: " + response.getStatusCode());
-            }
+            TokenResponse tokenResponse = authService.login(request);
+            return ResponseEntity.ok(tokenResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Login error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 }
