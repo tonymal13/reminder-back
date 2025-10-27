@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - keycloak-network
+      - app-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.0.0
@@ -34,11 +34,25 @@ services:
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
     networks:
-      - keycloak-network
+      - app-network
+
+  reminder-app-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: reminder-app-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - app_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+  app_postgres_data:
 
 networks:
-  keycloak-network:
+  app-network:
     driver: bridge
