@@ -20,6 +20,7 @@ public class AuthService {
 
     private final KeycloakClient keycloakClient;
     private final MessageSource messageSource;
+    private final UserService userService;
 
     public String registerUser(UserRegistrationRequest request) {
         try {
@@ -42,6 +43,8 @@ public class AuthService {
             keycloakClient.resetUserPassword(userId, credentials, adminToken.getAccessToken());
 
             keycloakClient.assignUserRole(userId, USER_ROLE, adminToken.getAccessToken());
+
+            userService.findOrCreateUser(userId, request.getEmail(), request.getUsername());
 
             return messageSource.getMessage("auth.register.success", null, Locale.getDefault());
 
