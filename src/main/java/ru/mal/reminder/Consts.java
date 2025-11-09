@@ -17,5 +17,6 @@ public class Consts {
     public static final String RESET_PASSWORD_PATH = "/reset-password";
     public static final String ROLE_MAPPINGS_PATH = "/role-mappings/realm";
     public static final String ADMIN_TOKEN_PATH = "/realms/master/protocol/openid-connect/token";
+    public static final String KEYCLOAK_HEADER = "X-Keycloak-Id";
 
 }
