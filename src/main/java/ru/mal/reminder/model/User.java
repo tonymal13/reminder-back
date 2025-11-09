@@ -26,6 +26,9 @@ public class User {
     @Column(nullable = false)
     private String username;
 
+    @Column(name = "chat_id", unique = true)
+    private String chatId;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reminder> reminders = new ArrayList<>();
 
