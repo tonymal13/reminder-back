@@ -29,6 +29,9 @@ public class Reminder {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "notified", nullable = false)
+    private Boolean notified = false;
+
     public Reminder() {}
 
     public Reminder(String title, String description, LocalDateTime remindDate, User user) {
