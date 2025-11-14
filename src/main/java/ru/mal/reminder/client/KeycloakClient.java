@@ -1,6 +1,8 @@
 package ru.mal.reminder.client;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,8 @@ import static ru.mal.reminder.Consts.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Getter
+@Setter
 public class KeycloakClient {
 
     private final RestTemplate restTemplate;
