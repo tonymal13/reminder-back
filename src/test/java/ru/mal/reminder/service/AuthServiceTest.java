@@ -16,14 +16,9 @@ import ru.mal.reminder.model.User;
 
 import java.util.Locale;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.Assertions;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -52,31 +47,31 @@ class AuthServiceTest {
         TokenResponse adminTokenResponse = createTokenResponse(ADMIN_TOKEN);
         User user = createUser();
 
-        when(keycloakClient.adminLogin()).thenReturn(adminTokenResponse);
-        when(keycloakClient.registerUser(anyString(), any(KeycloakUserRepresentation.class)))
+        Mockito.when(keycloakClient.adminLogin()).thenReturn(adminTokenResponse);
+        Mockito.when(keycloakClient.registerUser(ArgumentMatchers.anyString(), ArgumentMatchers.any(KeycloakUserRepresentation.class)))
                 .thenReturn(USER_ID);
-        when(userService.findOrCreateUser(USER_ID, request.getEmail(), request.getUsername()))
+        Mockito.when(userService.findOrCreateUser(USER_ID, request.getEmail(), request.getUsername()))
                 .thenReturn(user);
-        when(messageSource.getMessage(eq("auth.register.success"), eq(null), any(Locale.class)))
+        Mockito.when(messageSource.getMessage(ArgumentMatchers.eq("auth.register.success"), ArgumentMatchers.eq(null), ArgumentMatchers.any(Locale.class)))
                 .thenReturn(SUCCESS_MESSAGE);
 
         // When
         String result = authService.registerUser(request);
 
         // Then
-        assertThat(result).isEqualTo(SUCCESS_MESSAGE);
+        Assertions.assertThat(result).isEqualTo(SUCCESS_MESSAGE);
 
-        verify(keycloakClient).adminLogin();
-        verify(keycloakClient).registerUser(ADMIN_TOKEN,
+        Mockito.verify(keycloakClient).adminLogin();
+        Mockito.verify(keycloakClient).registerUser(ADMIN_TOKEN,
                 new KeycloakUserRepresentation(
                         request.getUsername(),
                         request.getEmail(),
                         true,
                         false
                 ));
-        verify(keycloakClient).resetUserPassword(eq(USER_ID), any(KeycloakCredentialsRepresentation.class), eq(ADMIN_TOKEN));
-        verify(keycloakClient).assignUserRole(USER_ID, "user", ADMIN_TOKEN);
-        verify(userService).findOrCreateUser(USER_ID, request.getEmail(), request.getUsername());
+        Mockito.verify(keycloakClient).resetUserPassword(ArgumentMatchers.eq(USER_ID), ArgumentMatchers.any(KeycloakCredentialsRepresentation.class), ArgumentMatchers.eq(ADMIN_TOKEN));
+        Mockito.verify(keycloakClient).assignUserRole(USER_ID, "user", ADMIN_TOKEN);
+        Mockito.verify(userService).findOrCreateUser(USER_ID, request.getEmail(), request.getUsername());
     }
 
     @Test
@@ -84,19 +79,19 @@ class AuthServiceTest {
         // Given
         UserRegistrationRequest request = createRegistrationRequest();
 
-        when(keycloakClient.adminLogin()).thenThrow(new RuntimeException("Keycloak unavailable"));
-        when(messageSource.getMessage(eq("auth.register.error"), eq(null), any(Locale.class)))
+        Mockito.when(keycloakClient.adminLogin()).thenThrow(new RuntimeException("Keycloak unavailable"));
+        Mockito.when(messageSource.getMessage(ArgumentMatchers.eq("auth.register.error"), ArgumentMatchers.eq(null), ArgumentMatchers.any(Locale.class)))
                 .thenReturn(ERROR_MESSAGE);
 
         // When & Then
-        assertThatThrownBy(() -> authService.registerUser(request))
+        Assertions.assertThatThrownBy(() -> authService.registerUser(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(ERROR_MESSAGE)
                 .hasCauseInstanceOf(RuntimeException.class);
 
-        verify(keycloakClient).adminLogin();
-        verify(keycloakClient, never()).registerUser(anyString(), any(KeycloakUserRepresentation.class));
-        verify(userService, never()).findOrCreateUser(anyString(), anyString(), anyString());
+        Mockito.verify(keycloakClient).adminLogin();
+        Mockito.verify(keycloakClient, Mockito.never()).registerUser(ArgumentMatchers.anyString(), ArgumentMatchers.any(KeycloakUserRepresentation.class));
+        Mockito.verify(userService, Mockito.never()).findOrCreateUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
     }
 
     @Test
@@ -105,22 +100,22 @@ class AuthServiceTest {
         UserRegistrationRequest request = createRegistrationRequest();
         TokenResponse adminTokenResponse = createTokenResponse(ADMIN_TOKEN);
 
-        when(keycloakClient.adminLogin()).thenReturn(adminTokenResponse);
-        when(keycloakClient.registerUser(anyString(), any(KeycloakUserRepresentation.class)))
+        Mockito.when(keycloakClient.adminLogin()).thenReturn(adminTokenResponse);
+        Mockito.when(keycloakClient.registerUser(ArgumentMatchers.anyString(), ArgumentMatchers.any(KeycloakUserRepresentation.class)))
                 .thenThrow(new RuntimeException("Registration failed"));
-        when(messageSource.getMessage(eq("auth.register.error"), eq(null), any(Locale.class)))
+        Mockito.when(messageSource.getMessage(ArgumentMatchers.eq("auth.register.error"), ArgumentMatchers.eq(null), ArgumentMatchers.any(Locale.class)))
                 .thenReturn(ERROR_MESSAGE);
 
         // When & Then
-        assertThatThrownBy(() -> authService.registerUser(request))
+        Assertions.assertThatThrownBy(() -> authService.registerUser(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(ERROR_MESSAGE)
                 .hasCauseInstanceOf(RuntimeException.class);
 
-        verify(keycloakClient).adminLogin();
-        verify(keycloakClient).registerUser(anyString(), any(KeycloakUserRepresentation.class));
-        verify(keycloakClient, never()).resetUserPassword(anyString(), any(), anyString());
-        verify(userService, never()).findOrCreateUser(anyString(), anyString(), anyString());
+        Mockito.verify(keycloakClient).adminLogin();
+        Mockito.verify(keycloakClient).registerUser(ArgumentMatchers.anyString(), ArgumentMatchers.any(KeycloakUserRepresentation.class));
+        Mockito.verify(keycloakClient, Mockito.never()).resetUserPassword(ArgumentMatchers.anyString(), ArgumentMatchers.any(), ArgumentMatchers.anyString());
+        Mockito.verify(userService, Mockito.never()).findOrCreateUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
     }
 
     @Test
@@ -129,15 +124,15 @@ class AuthServiceTest {
         UserLoginRequest request = new UserLoginRequest("testuser", "password");
         TokenResponse expectedToken = createTokenResponse("user-token");
 
-        when(keycloakClient.userLogin(request.getUsername(), request.getPassword()))
+        Mockito.when(keycloakClient.userLogin(request.getUsername(), request.getPassword()))
                 .thenReturn(expectedToken);
 
         // When
         TokenResponse result = authService.login(request);
 
         // Then
-        assertThat(result).isEqualTo(expectedToken);
-        verify(keycloakClient).userLogin(request.getUsername(), request.getPassword());
+        Assertions.assertThat(result).isEqualTo(expectedToken);
+        Mockito.verify(keycloakClient).userLogin(request.getUsername(), request.getPassword());
     }
 
     @Test
@@ -146,18 +141,18 @@ class AuthServiceTest {
         UserLoginRequest request = new UserLoginRequest("testuser", "wrongpassword");
         String errorMessage = "Login error";
 
-        when(keycloakClient.userLogin(request.getUsername(), request.getPassword()))
+        Mockito.when(keycloakClient.userLogin(request.getUsername(), request.getPassword()))
                 .thenThrow(new RuntimeException("Invalid credentials"));
-        when(messageSource.getMessage(eq("auth.login.error"), eq(null), any(Locale.class)))
+        Mockito.when(messageSource.getMessage(ArgumentMatchers.eq("auth.login.error"), ArgumentMatchers.eq(null), ArgumentMatchers.any(Locale.class)))
                 .thenReturn(errorMessage);
 
         // When & Then
-        assertThatThrownBy(() -> authService.login(request))
+        Assertions.assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(errorMessage)
                 .hasCauseInstanceOf(RuntimeException.class);
 
-        verify(keycloakClient).userLogin(request.getUsername(), request.getPassword());
+        Mockito.verify(keycloakClient).userLogin(request.getUsername(), request.getPassword());
     }
 
     private UserRegistrationRequest createRegistrationRequest() {

@@ -16,13 +16,8 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.Assertions;
+import org.mockito.Mockito;
 
 @ExtendWith(MockitoExtension.class)
 class ReminderServiceTest {
@@ -50,20 +45,20 @@ class ReminderServiceTest {
         ReminderRequest request = createReminderRequest();
         Reminder savedReminder = createReminder(user);
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
-        when(reminderRepository.save(any(Reminder.class))).thenReturn(savedReminder);
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
+        Mockito.when(reminderRepository.save(Mockito.any(Reminder.class))).thenReturn(savedReminder);
 
         // When
         ReminderResponse response = reminderService.createReminder(request, KEYCLOAK_ID);
 
         // Then
-        assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(REMINDER_ID);
-        assertThat(response.getTitle()).isEqualTo(request.getTitle());
-        assertThat(response.getDescription()).isEqualTo(request.getDescription());
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getId()).isEqualTo(REMINDER_ID);
+        Assertions.assertThat(response.getTitle()).isEqualTo(request.getTitle());
+        Assertions.assertThat(response.getDescription()).isEqualTo(request.getDescription());
 
-        verify(userService).findByKeycloakId(KEYCLOAK_ID);
-        verify(reminderRepository).save(any(Reminder.class));
+        Mockito.verify(userService).findByKeycloakId(KEYCLOAK_ID);
+        Mockito.verify(reminderRepository).save(Mockito.any(Reminder.class));
     }
 
     @Test
@@ -72,17 +67,17 @@ class ReminderServiceTest {
         ReminderRequest request = createReminderRequest();
         String errorMessage = "User not found";
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.empty());
-        when(messageSource.getMessage(eq("user.not.found"), eq(null), any(Locale.class)))
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.empty());
+        Mockito.when(messageSource.getMessage(Mockito.eq("user.not.found"), Mockito.eq(null), Mockito.any(Locale.class)))
                 .thenReturn(errorMessage);
 
         // When & Then
-        assertThatThrownBy(() -> reminderService.createReminder(request, KEYCLOAK_ID))
+        Assertions.assertThatThrownBy(() -> reminderService.createReminder(request, KEYCLOAK_ID))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(errorMessage);
 
-        verify(userService).findByKeycloakId(KEYCLOAK_ID);
-        verify(reminderRepository, never()).save(any(Reminder.class));
+        Mockito.verify(userService).findByKeycloakId(KEYCLOAK_ID);
+        Mockito.verify(reminderRepository, Mockito.never()).save(Mockito.any(Reminder.class));
     }
 
     @Test
@@ -98,21 +93,21 @@ class ReminderServiceTest {
         updatedReminder.setTitle("Updated Title");
         updatedReminder.setDescription("Updated Description");
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
-        when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
+        Mockito.when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
                 .thenReturn(Optional.of(existingReminder));
-        when(reminderRepository.save(any(Reminder.class))).thenReturn(updatedReminder);
+        Mockito.when(reminderRepository.save(Mockito.any(Reminder.class))).thenReturn(updatedReminder);
 
         // When
         ReminderResponse response = reminderService.updateReminder(REMINDER_ID, request, KEYCLOAK_ID);
 
         // Then
-        assertThat(response).isNotNull();
-        assertThat(response.getTitle()).isEqualTo("Updated Title");
-        assertThat(response.getDescription()).isEqualTo("Updated Description");
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getTitle()).isEqualTo("Updated Title");
+        Assertions.assertThat(response.getDescription()).isEqualTo("Updated Description");
 
-        verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
-        verify(reminderRepository).save(existingReminder);
+        Mockito.verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
+        Mockito.verify(reminderRepository).save(existingReminder);
     }
 
     @Test
@@ -122,18 +117,18 @@ class ReminderServiceTest {
         ReminderRequest request = createReminderRequest();
         String errorMessage = "Reminder not found";
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
-        when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID)).thenReturn(Optional.empty());
-        when(messageSource.getMessage(eq("reminder.not.found"), eq(null), any(Locale.class)))
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
+        Mockito.when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID)).thenReturn(Optional.empty());
+        Mockito.when(messageSource.getMessage(Mockito.eq("reminder.not.found"), Mockito.eq(null), Mockito.any(Locale.class)))
                 .thenReturn(errorMessage);
 
         // When & Then
-        assertThatThrownBy(() -> reminderService.updateReminder(REMINDER_ID, request, KEYCLOAK_ID))
+        Assertions.assertThatThrownBy(() -> reminderService.updateReminder(REMINDER_ID, request, KEYCLOAK_ID))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(errorMessage);
 
-        verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
-        verify(reminderRepository, never()).save(any(Reminder.class));
+        Mockito.verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
+        Mockito.verify(reminderRepository, Mockito.never()).save(Mockito.any(Reminder.class));
     }
 
     @Test
@@ -142,16 +137,16 @@ class ReminderServiceTest {
         User user = createUser();
         Reminder reminder = createReminder(user);
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
-        when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
+        Mockito.when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
                 .thenReturn(Optional.of(reminder));
 
         // When
         reminderService.deleteReminder(REMINDER_ID, KEYCLOAK_ID);
 
         // Then
-        verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
-        verify(reminderRepository).delete(reminder);
+        Mockito.verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
+        Mockito.verify(reminderRepository).delete(reminder);
     }
 
     @Test
@@ -160,19 +155,19 @@ class ReminderServiceTest {
         User user = createUser();
         Reminder reminder = createReminder(user);
 
-        when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
-        when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
+        Mockito.when(userService.findByKeycloakId(KEYCLOAK_ID)).thenReturn(Optional.of(user));
+        Mockito.when(reminderRepository.findByIdAndUserId(REMINDER_ID, USER_ID))
                 .thenReturn(Optional.of(reminder));
 
         // When
         ReminderResponse response = reminderService.getReminderById(REMINDER_ID, KEYCLOAK_ID);
 
         // Then
-        assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(REMINDER_ID);
-        assertThat(response.getTitle()).isEqualTo(reminder.getTitle());
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getId()).isEqualTo(REMINDER_ID);
+        Assertions.assertThat(response.getTitle()).isEqualTo(reminder.getTitle());
 
-        verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
+        Mockito.verify(reminderRepository).findByIdAndUserId(REMINDER_ID, USER_ID);
     }
 
     private User createUser() {

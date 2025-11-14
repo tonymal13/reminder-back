@@ -10,9 +10,8 @@ import ru.mal.reminder.repository.UserRepository;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.assertj.core.api.Assertions;
+import org.mockito.Mockito;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -32,79 +31,79 @@ class UserServiceTest {
         // Given
         User existingUser = createUser();
 
-        when(userRepository.findByKeycloakId(KEYCLOAK_ID))
+        Mockito.when(userRepository.findByKeycloakId(KEYCLOAK_ID))
                 .thenReturn(Optional.of(existingUser));
 
         // When
         User result = userService.findOrCreateUser(KEYCLOAK_ID, EMAIL, USERNAME);
 
         // Then
-        assertThat(result).isEqualTo(existingUser);
-        verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
+        Assertions.assertThat(result).isEqualTo(existingUser);
+        Mockito.verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
     }
 
     @Test
     void findOrCreateUser_ShouldCreateNewUser_WhenUserDoesNotExist() {
         // Given
-        when(userRepository.findByKeycloakId(KEYCLOAK_ID))
+        Mockito.when(userRepository.findByKeycloakId(KEYCLOAK_ID))
                 .thenReturn(Optional.empty());
 
         User newUser = createUser();
-        when(userRepository.save(any(User.class))).thenReturn(newUser);
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(newUser);
 
         // When
         User result = userService.findOrCreateUser(KEYCLOAK_ID, EMAIL, USERNAME);
 
         // Then
-        assertThat(result).isEqualTo(newUser);
-        verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
-        verify(userRepository).save(any(User.class));
+        Assertions.assertThat(result).isEqualTo(newUser);
+        Mockito.verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
+        Mockito.verify(userRepository).save(Mockito.any(User.class));
     }
 
     @Test
     void findOrCreateUser_ShouldSetCorrectFields_WhenCreatingNewUser() {
         // Given
-        when(userRepository.findByKeycloakId(KEYCLOAK_ID))
+        Mockito.when(userRepository.findByKeycloakId(KEYCLOAK_ID))
                 .thenReturn(Optional.empty());
 
         User savedUser = createUser();
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(savedUser);
 
         // When
         User result = userService.findOrCreateUser(KEYCLOAK_ID, EMAIL, USERNAME);
 
         // Then
-        verify(userRepository).save(any(User.class));
+        Mockito.verify(userRepository).save(Mockito.any(User.class));
     }
 
     @Test
     void findByKeycloakId_ShouldReturnUser_WhenUserExists() {
         // Given
         User user = createUser();
-        when(userRepository.findByKeycloakId(KEYCLOAK_ID))
+        Mockito.when(userRepository.findByKeycloakId(KEYCLOAK_ID))
                 .thenReturn(Optional.of(user));
 
         // When
         Optional<User> result = userService.findByKeycloakId(KEYCLOAK_ID);
 
         // Then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(user);
-        verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
+        Assertions.assertThat(result).isPresent();
+        Assertions.assertThat(result.get()).isEqualTo(user);
+        Mockito.verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
     }
 
     @Test
     void findByKeycloakId_ShouldReturnEmpty_WhenUserDoesNotExist() {
         // Given
-        when(userRepository.findByKeycloakId(KEYCLOAK_ID))
+        Mockito.when(userRepository.findByKeycloakId(KEYCLOAK_ID))
                 .thenReturn(Optional.empty());
 
         // When
         Optional<User> result = userService.findByKeycloakId(KEYCLOAK_ID);
 
         // Then
-        assertThat(result).isEmpty();
-        verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
+        Assertions.assertThat(result).isEmpty();
+        Mockito.verify(userRepository).findByKeycloakId(KEYCLOAK_ID);
     }
 
     private User createUser() {
